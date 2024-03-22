@@ -18,6 +18,9 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        ordering = ["title"]
+
 
 class Borrowing(models.Model):
     borrow_date = models.DateTimeField(auto_now=True)
@@ -28,6 +31,9 @@ class Borrowing(models.Model):
 
     def __str__(self):
         return f'Borrowing: {self.book.title}'
+
+    class Meta:
+        ordering = ["-borrow_date"]
 
 
 class Payment(models.Model):
