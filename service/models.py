@@ -1,6 +1,3 @@
-from datetime import timezone
-from enum import Enum
-
 from django.db import models
 
 
@@ -23,12 +20,38 @@ class Book(models.Model):
 
 
 class Borrowing(models.Model):
-    borrow_date = models.DateField(default=timezone.now)
-    expected_return_date = models.DateField()
-    actual_return_date = models.DateField(blank=True, null=True)
-    book = models.ForeignKey('Book', on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    borrow_date = models.DateTimeField(auto_now=True)
+    expected_return_date = models.DateTimeField()
+    actual_return_date = models.DateTimeField(blank=True, null=True)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="borrowings")
+    # user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'Borrowing: {self.book.title} by {self.user.username}'
+        return f'Borrowing: {self.book.title}'
+
+
+class Payment(models.Model):
+    class StatusChoices(models.TextChoices):
+        PENDING = 'PENDING'
+        PAID = 'PAID'
+
+    class TypeChoices(models.TextChoices):
+        PAYMENT = 'PAYMENT'
+        FINE = 'FINE'
+
+    status = models.CharField(
+        max_length=7,
+        choices=StatusChoices.choices
+    )
+    type = models.CharField(
+        max_length=7,
+        choices=TypeChoices.choices
+    )
+    borrowing = models.ForeignKey(Borrowing, on_delete=models.CASCADE, related_name="payments")
+    session_url = models.URLField()
+    session_id = models.CharField(max_length=255)
+    money_to_pay = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f'Payment: {self.id} ({self.status})'
 
